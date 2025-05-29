@@ -1,0 +1,253 @@
+// TrainmyEars Database Schema
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String?  // Added password field
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Subscription info
+  subscription   Subscription?
+  subscriptionId String?       @unique
+  
+  // Current game state
+  currentLevel     Int     @default(1)
+  currentStreak    Int     @default(0)
+  overallAccuracy  Float   @default(0.0)
+  totalGamesPlayed Int     @default(0)
+  lastPlayedAt     DateTime?
+  
+  // Relations
+  gameSessions    GameSession[]
+  leaderboardEntries LeaderboardEntry[]
+  userStats       UserStats[]
+  
+  @@map("users")
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      SubscriptionType
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime @default(now())
+  endDate   DateTime
+  
+  // Payment info
+  amount         Float
+  currency       String @default("USD")
+  paymentMethod  String?
+  externalId     String? // For payment provider reference
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("subscriptions")
+}
+
+model Instrument {
+  id          String @id @default(cuid())
+  name        String @unique // "Guitar", "Piano"
+  displayName String
+  isActive    Boolean @default(true)
+  
+  // Relations
+  chords       Chord[]
+  gameSessions GameSession[]
+  
+  @@map("instruments")
+}
+
+model Level {
+  id          Int     @id @default(autoincrement())
+  number      Int     @unique
+  name        String  // "Level 1", "Level 2", etc.
+  description String?
+  isFree      Boolean @default(true)
+  isActive    Boolean @default(true)
+  
+  // Relations
+  chords             Chord[]
+  gameSessions       GameSession[]
+  leaderboardEntries LeaderboardEntry[]
+  userStats          UserStats[]
+  
+  @@map("levels")
+}
+
+model Chord {
+  id           String @id @default(cuid())
+  name         String // "G", "C", "D", "Em", etc.
+  displayName  String
+  audioFileUrl String? // URL to the chord audio file
+  
+  // Relations
+  instrument   Instrument @relation(fields: [instrumentId], references: [id])
+  instrumentId String
+  level        Level      @relation(fields: [levelId], references: [id])
+  levelId      Int
+  
+  // Game relations
+  gameSessionChords GameSessionChord[]
+  
+  isActive Boolean @default(true)
+  
+  @@unique([name, instrumentId, levelId])
+  @@map("chords")
+}
+
+model GameSession {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  instrument   Instrument @relation(fields: [instrumentId], references: [id])
+  instrumentId String
+  level        Level      @relation(fields: [levelId], references: [id])
+  levelId      Int
+  
+  gameMode     GameMode   @default(SINGLE_CHORD)
+  isCompleted  Boolean    @default(false)
+  
+  // Session stats
+  totalQuestions    Int     @default(0)
+  correctAnswers    Int     @default(0)
+  accuracy          Float   @default(0.0)
+  sessionStreak     Int     @default(0)
+  maxStreak         Int     @default(0)
+  
+  // Timing
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+  durationMs   Int?     // Duration in milliseconds
+  
+  // Relations
+  chords GameSessionChord[]
+  
+  @@map("game_sessions")
+}
+
+model GameSessionChord {
+  id            String @id @default(cuid())
+  gameSessionId String
+  gameSession   GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+  
+  chord         Chord  @relation(fields: [chordId], references: [id])
+  chordId       String
+  
+  // For advanced mode - sequence of chords
+  sequenceOrder Int    @default(1)
+  
+  // User's answer
+  userAnswer    String? // The chord name the user selected
+  isCorrect     Boolean @default(false)
+  responseTimeMs Int?   // Time taken to answer in milliseconds
+  
+  playedAt DateTime @default(now())
+  
+  @@map("game_session_chords")
+}
+
+model LeaderboardEntry {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  level    Level @relation(fields: [levelId], references: [id])
+  levelId  Int
+  
+  // Score calculation
+  score           Int   // Based on accuracy, streak, and speed
+  accuracy        Float
+  streak          Int
+  gamesPlayed     Int
+  averageTimeMs   Int?
+  
+  // Daily tracking
+  date      DateTime @default(now()) @db.Date
+  rank      Int?     // Daily rank for this level
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([userId, levelId, date])
+  @@index([levelId, date, score])
+  @@map("leaderboard_entries")
+}
+
+model UserStats {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Daily stats
+  date           DateTime @db.Date
+  gamesPlayed    Int      @default(0)
+  totalQuestions Int      @default(0)
+  correctAnswers Int      @default(0)
+  accuracy       Float    @default(0.0)
+  maxStreak      Int      @default(0)
+  timePlayedMs   Int      @default(0)
+  
+  // Level-specific stats
+  levelId        Int?
+  level          Level? @relation(fields: [levelId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, date, levelId])
+  @@map("user_stats")
+}
+
+model AppSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  
+  description String?
+  updatedAt   DateTime @updatedAt
+  
+  @@map("app_settings")
+}
+
+// New model for refresh tokens
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@map("refresh_tokens")
+}
+
+// Enums
+enum SubscriptionType {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum GameMode {
+  SINGLE_CHORD
+  ADVANCED_SEQUENCE
+}
