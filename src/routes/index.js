@@ -8,6 +8,7 @@ const gameRoutes = require("./gameRoutes")
 const leaderboardRoutes = require("./leaderboardRoutes")
 const subscriptionRoutes = require("./subscriptionRoutes")
 const instrumentRoutes = require("./instrumentRoutes")
+const chordRoutes = require("./chordRoutes")
 
 // API routes
 router.use("/auth", authRoutes)
@@ -16,5 +17,6 @@ router.use("/game", gameRoutes)
 router.use("/leaderboard", leaderboardRoutes)
 router.use("/subscription", subscriptionRoutes)
 router.use("/instruments", instrumentRoutes)
+router.use("/chords", chordRoutes)
 
 module.exports = router

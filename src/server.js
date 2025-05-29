@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const helmet = require("helmet")
 const morgan = require("morgan")
+const path = require("path")
 require("dotenv").config()
 
 const { errorHandler, notFound } = require("./middleware/errorMiddleware")
@@ -30,6 +31,9 @@ app.use(morgan("combined"))
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true }))
+
+// Serve static files (uploaded audio files)
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")))
 
 // Swagger documentation
 app.use(
@@ -62,6 +66,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`)
   console.log(`📊 Health check: http://localhost:${PORT}/trainmyears`)
   console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`)
+  console.log(`🎵 Audio files: http://localhost:${PORT}/uploads/audio/`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`)
 })
 

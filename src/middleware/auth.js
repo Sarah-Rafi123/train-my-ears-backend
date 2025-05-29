@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken")
 const prisma = require("../config/database")
+const authService = require("../services/authService")
 
 // Protect routes - verify JWT token
 const protect = async (req, res, next) => {
@@ -20,29 +21,8 @@ const protect = async (req, res, next) => {
     }
 
     try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-
-      // Get user from database
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          currentLevel: true,
-          currentStreak: true,
-          overallAccuracy: true,
-          totalGamesPlayed: true,
-        },
-      })
-
-      if (!user) {
-        return res.status(401).json({
-          success: false,
-          error: { message: "Not authorized, user not found" },
-        })
-      }
+      // Verify token and get user
+      const user = await authService.verifyTokenAndGetUser(token)
 
       // Add user to request object
       req.user = user
@@ -50,7 +30,7 @@ const protect = async (req, res, next) => {
     } catch (error) {
       return res.status(401).json({
         success: false,
-        error: { message: "Not authorized, token invalid" },
+        error: { message: error.message || "Not authorized, token invalid" },
       })
     }
   } catch (error) {
@@ -78,32 +58,16 @@ const optionalAuth = async (req, res, next) => {
     }
 
     try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
+      // Verify token and get user
+      const user = await authService.verifyTokenAndGetUser(token)
 
-      // Get user from database
-      const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          currentLevel: true,
-          currentStreak: true,
-          overallAccuracy: true,
-          totalGamesPlayed: true,
-        },
-      })
-
-      // Add user to request object if found
-      if (user) {
-        req.user = user
-      }
-      next()
+      // Add user to request object
+      req.user = user
     } catch (error) {
       // Continue without user if token is invalid
-      next()
     }
+
+    next()
   } catch (error) {
     console.error("Optional auth middleware error:", error)
     next()
