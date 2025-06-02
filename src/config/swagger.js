@@ -198,7 +198,7 @@ const options = {
             },
             gameMode: {
               type: "string",
-              enum: ["SINGLE_CHORD", "ADVANCED_SEQUENCE"],
+              enum: ["SIMPLE_MODE", "ADVANCED_MODE"],
               description: "Game mode",
               default: "SINGLE_CHORD",
             },

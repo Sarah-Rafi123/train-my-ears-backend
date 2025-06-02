@@ -64,7 +64,7 @@ app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`)
-  console.log(`📊 Health check: http://localhost:${PORT}/trainmyears`)
+  console.log(`📊 API connection check: http://localhost:${PORT}/trainmyears`)
   console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`)
   console.log(`🎵 Audio files: http://localhost:${PORT}/uploads/audio/`)
   console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`)

@@ -12,68 +12,6 @@ const router = express.Router()
  *   description: User management endpoints
  */
 
-/**
- * @swagger
- * /users/register:
- *   post:
- *     summary: Register a new user
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *             properties:
- *               name:
- *                 type: string
- *                 description: User's name
- *                 example: "John Doe"
- *               email:
- *                 type: string
- *                 format: email
- *                 description: User's email address
- *                 example: "john@example.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 description: User's password (min 6 characters)
- *                 example: "password123"
- *     responses:
- *       201:
- *         description: User registered successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/ApiResponse'
- *                 - type: object
- *                   properties:
- *                     data:
- *                       type: object
- *                       properties:
- *                         user:
- *                           $ref: '#/components/schemas/User'
- *       400:
- *         description: User already exists or validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiResponse'
- */
-router.post(
-  "/register",
-  [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("email").isEmail().withMessage("Please include a valid email"),
-    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-  ],
-  registerUser,
-)
 
 /**
  * @swagger

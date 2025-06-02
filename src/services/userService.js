@@ -6,52 +6,6 @@ const bcrypt = require("bcryptjs")
  */
 class UserService {
   /**
-   * Register a new user
-   * @param {Object} userData - User data (name, email, password)
-   * @returns {Object} Created user object (without password)
-   */
-  async registerUser(userData) {
-    const { name, email, password } = userData
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (existingUser) {
-      throw new Error("User with this email already exists")
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
-
-    // Create new user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        currentLevel: 1,
-        currentStreak: 0,
-        overallAccuracy: 0.0,
-        totalGamesPlayed: 0,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        currentLevel: true,
-        currentStreak: true,
-        overallAccuracy: true,
-        totalGamesPlayed: true,
-        createdAt: true,
-      },
-    })
-
-    return user
-  }
-
-  /**
    * Get user profile by ID
    * @param {string} userId - User ID
    * @returns {Object} User profile with subscription and game session count

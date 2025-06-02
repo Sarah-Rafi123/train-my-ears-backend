@@ -276,8 +276,8 @@ exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
 };
 
 exports.GameMode = exports.$Enums.GameMode = {
-  SINGLE_CHORD: 'SINGLE_CHORD',
-  ADVANCED_SEQUENCE: 'ADVANCED_SEQUENCE'
+  SIMPLE_MODE: 'SIMPLE_MODE',
+  ADVANCE_MODE: 'ADVANCE_MODE'
 };
 
 exports.Prisma.ModelName = {

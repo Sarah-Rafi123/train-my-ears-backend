@@ -92,8 +92,8 @@ export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof Subscr
 
 
 export const GameMode: {
-  SINGLE_CHORD: 'SINGLE_CHORD',
-  ADVANCED_SEQUENCE: 'ADVANCED_SEQUENCE'
+  SIMPLE_MODE: 'SIMPLE_MODE',
+  ADVANCE_MODE: 'ADVANCE_MODE'
 };
 
 export type GameMode = (typeof GameMode)[keyof typeof GameMode]
