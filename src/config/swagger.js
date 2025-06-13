@@ -19,7 +19,7 @@ const options = {
         description: "Development server",
       },
       {
-        url: "https://your-production-url.com/api",
+        url: "https://1d64-39-34-46-187.ngrok-free.app/api",
         description: "Production server",
       },
     ],
